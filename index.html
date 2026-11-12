@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Карта фактологии · 1 семестр</title>
+<style>
+:root{font:16px/1.55 system-ui,sans-serif;color:#2c2321;background:#f6f3ef;--red:#982525;--line:#e1d9d0}*{box-sizing:border-box}body{margin:0;border-top:5px solid var(--red)}main{width:min(860px,calc(100% - 32px));margin:auto;padding:40px 0}h1,h2,h3{font-family:Georgia,serif;line-height:1.18}h1{font-size:clamp(2.4rem,7vw,4rem);color:var(--red);font-weight:500;margin:0}h2,h3{margin:0 0 12px}h3{font-size:1.25rem}p{margin:6px 0}.muted{color:#675b55}.toolbar,.score{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.toolbar{justify-content:space-between;border-block:1px solid var(--line);margin:24px 0 16px;padding:12px 0}button,.button{display:inline-block;border:0;border-radius:999px;background:var(--red);color:white;padding:9px 17px;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}button:hover,.button:hover{background:#761d1d}:focus-visible{outline:3px solid #386499;outline-offset:3px}article,.matching,#results{background:white;border:1px solid var(--line);border-radius:12px;padding:clamp(15px,4vw,24px);margin:0 0 12px;scroll-margin-top:12px}.matching article{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 0 0;margin:14px 0 0}.meta{color:var(--red);font-size:.82rem;font-weight:650;margin-bottom:6px}fieldset{border:0;margin:0 0 12px;padding:0;min-width:0}.choice{display:flex;align-items:baseline;gap:8px;padding:9px 11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;cursor:pointer}.choice:has(input:checked){border-color:var(--red);background:#fcf0ed}input[type=radio]{accent-color:var(--red);flex:none}textarea,select{font:inherit;color:inherit;width:100%;display:block;border:1px solid #ab9f96;border-radius:8px;background:white;padding:9px 10px;margin-top:6px}textarea{resize:vertical;min-height:68px}.feedback,.count{border-radius:8px;padding:8px 12px}.feedback{margin-top:10px}.good{color:#1c6043;background:#eaf5ee}.bad{color:#932a2a;background:#faecea}#results{margin-top:26px}#review{padding:0;list-style:none}#review li{margin:6px 0;padding:6px 10px;border-radius:6px}#review a{color:inherit;text-underline-offset:3px}
+</style>
+<main><header><h1 id="title" tabindex="-1">Карта фактологии</h1><p class="muted">1 семестр · 6 семинаров · 29 вопросов</p></header><div class="toolbar"><span id="progress" aria-live="polite"></span><div><a class="button" href="#results">К результатам</a> <button id="change">Другой вариант</button></div></div><div id="questions"></div><section id="results"><h2>Результаты</h2><div id="score" class="score" aria-live="polite"></div><ul id="review"></ul><button id="again">Другой вариант</button></section></main>
+<script>
+const rows=[
+[1,'эпохи','Средневизантийский период','Какими веками датируется средневизантийский период по карте?','IX–XII вв.|9–12','VIII–XI вв.','IX–XIII вв.','X–XII вв.'],
+[1,'эпохи','Поздневизантийский период','Какими веками датируется поздневизантийский период по карте?','XIII–XV вв.|13–15','XII–XV вв.','XIII–XVI вв.','XIV–XV вв.'],
+[1,'иконоборчество','Первый период','Какими годами датируется первый период иконоборчества по карте?','730–787 гг.','726–787 гг.','730–786 гг.','754–787 гг.'],
+[1,'иконоборчество','Второй период','Какими годами датируется второй период иконоборчества?','815–843 гг.','813–843 гг.','815–842 гг.','814–843 гг.'],
+[1,'','','Назовите двух ключевых авторов первого периода иконоборчества.','Герман I Константинопольский|Герман I|Герман / Иоанн Дамаскин|Дамаскин','Герман I Константинопольский, Феодор Студит','Иоанн Дамаскин, Никифор I Константинопольский','Герман I Константинопольский, Мефодий I Константинопольский'],
+[2,'жизнь','Иоанн Дамаскин','Каковы приблизительные годы жизни Иоанна Дамаскина по карте?','Ок. 650 — ок. 750 г.','Ок. 650 — ок. 730 г.','Ок. 675 — ок. 750 г.','Ок. 675 — ок. 775 г.'],
+[2,'','','Какие три части входят в «Источник знания»?','Диалектика|Философские главы / О ересях|О ста ересях вкратце|О 100 ересях вкратце / Точное изложение православной веры','Диалектика, Три слова в защиту икон, Точное изложение православной веры','Диалектика, О ересях, Три слова в защиту икон','О ересях, О двух волях во Христе, Точное изложение православной веры'],
+[2,'труды','Герман I','Какие труды Германа I указаны в карте? Назовите догматические послания, проповеди и гимнографию.','Три догматические послания в защиту иконопочитания|Три догматических послания|Догматические послания / Богородичные гомилии|Гомилии на Богородичные праздники / Каноны|Канон на Благовещение','Три догматические послания в защиту иконопочитания, Богородичные гомилии, Синодик в Неделю Православия','Три слова в защиту икон, Богородичные гомилии, каноны','Три догматические послания в защиту иконопочитания, Огласительные слова, каноны'],
+[2,'','','Назовите трёх ключевых авторов второго периода иконоборчества.','Феодор Студит|Студит / Никифор I|Никифор / Мефодий I|Мефодий','Феодор Студит, Никифор I, Герман I','Феодор Студит, Мефодий I, Иоанн Дамаскин','Никифор I, Мефодий I, Герман I'],
+[2,'','','В каком году состоялся Иерийский собор?','754 г.','751 г.','756 г.','769 г.'],
+[3,'','','Какие два императора начали гонения на иконопочитателей?','Лев III Исавр|Лев III|Лев 3|Лев Исавр / Лев V Армянин|Лев V|Лев 5|Лев Армянин','Лев III Исавр, Михаил II Травл','Константин V Копроним, Лев V Армянин','Лев III Исавр, Феофил'],
+[3,'жизнь','Феодор Студит','Каковы годы жизни Феодора Студита?','759–826 гг.','759–828 гг.','750–826 гг.','758–825 гг.'],
+[3,'труды','Феодор Студит','Назовите пять пунктов из списка трудов Феодора Студита, включая два катехизиса.','Опровержения иконоборцев|Антирретики|Опровержение иконоборцев / Малый катехизис|Малое оглашение / Большой катехизис|Большое оглашение / Постановления / Монашеские уставы|Уставы','Антирретики, Малый катехизис, Большой катехизис, постановления, канонические послания','О магнезийце, Малый катехизис, Большой катехизис, постановления, монашеские уставы','Антирретики, Малый катехизис, Огласительные слова, постановления, монашеские уставы'],
+[3,'','','Укажите годы патриаршества Никифора I и год его смерти.','806–815 гг. / 828 г.','806–815 гг., 826 г.','806–814 гг., 828 г.','806–815 гг., 829 г.'],
+[3,'патриаршества','Патриаршество Мефодия I','Когда Мефодий I занимал Константинопольскую кафедру?','843–847 гг.','842–847 гг.','843–858 гг.','844–847 гг.'],
+[4,'труды','Никифор I','Назовите исторический труд Никифора I и два его сочинения против иконоборцев из карты.','Краткая история / Антирретики / О магнезийце','Краткая история, Антирретики, Три догматические послания','Краткая история, О магнезийце, Синодик в Неделю Православия','Библиотека, Антирретики, О магнезийце'],
+[4,'труды','Мефодий I','Назовите «Синодик» Мефодия I и три других вида его сочинений.','Синодик в Неделю Православия|Синодик Православия|Синодик / Агиографические сочинения|Агиография|Жития|Житие Николая Чудотворца / Канонические сочинения|Канонические труды|Каноника / Литургическая поэзия|Литургические песнопения','Синодик в Неделю Православия, агиография, канонические сочинения, исторические сочинения','Синодик в Неделю Православия, агиография, антииконоборческие трактаты, литургическая поэзия','Синодик в Неделю Православия, Богородичные гомилии, канонические сочинения, литургическая поэзия'],
+[4,'патриаршества','Первое патриаршество Фотия','Когда было первое патриаршество Фотия?','858–867 гг.','858–869 гг.','863–867 гг.','857–867 гг.'],
+[4,'патриаршества','Второе патриаршество Фотия','Когда было второе патриаршество Фотия?','877–886 гг.','878–886 гг.','877–887 гг.','879–886 гг.'],
+[4,'','','Назовите четыре труда Фотия из карты, включая два антилатинских.','Библиотека|Мириобиблион / Амфилохии / Окружное послание восточным патриархам|Окружное послание / Мистагогия','Библиотека, Амфилохии, Окружное послание восточным патриархам, Синодик в Неделю Православия','Библиотека, Краткая история, Окружное послание восточным патриархам, Мистагогия','Библиотека, Амфилохии, О магнезийце, Мистагогия'],
+[5,'','','Какими годами датируется Фотианская схизма по карте?','863–867 гг.','858–867 гг.','863–869 гг.','861–867 гг.'],
+[5,'соборы','Малый Софийский собор','Укажите годы Малого Софийского собора, поддержанного им патриарха и номер собора в католической традиции.','869–870 гг. / Игнатий|Игнатия / VIII Вселенский собор|VIII|8|8 Вселенский собор','869–870 гг., Фотий, VIII Вселенский собор','879–880 гг., Игнатий, VIII Вселенский собор','869–870 гг., Игнатий, VII Вселенский собор'],
+[5,'соборы','Большой Софийский собор','Укажите годы Большого Софийского собора, поддержанного им патриарха и номер собора по греческой традиции, указанной в карте.','879–880 гг. / Фотий|Фотия / VIII Вселенский собор|VIII|8|8 Вселенский собор','879–880 гг., Игнатий, VIII Вселенский собор','869–870 гг., Фотий, VIII Вселенский собор','879–880 гг., Фотий, VII Вселенский собор'],
+[5,'жизнь','Симеон Новый Богослов','Каковы приблизительные годы жизни Симеона Нового Богослова по карте?','Ок. 950 — ок. 1030 г.','Ок. 950 — ок. 1020 г.','Ок. 960 — ок. 1030 г.','Ок. 970 — ок. 1050 г.'],
+[5,'','','Назовите четыре основных корпуса трудов Симеона Нового Богослова.','Гимны / Богословские слова / Нравственные слова / Огласительные слова|Оглашения','Гимны, Богословские слова, Нравственные слова, Канонические послания','Гимны, Богословские слова, Догматические послания, Огласительные слова','Гимны, Антирретики, Нравственные слова, Огласительные слова'],
+[6,'','','Какими годами датируется «Македонский ренессанс» по карте?','867–1056 гг.','867–1025 гг.','866–1056 гг.','877–1057 гг.'],
+[6,'','','Каковы годы жизни Никиты Стифата по карте? Укажите обе возможные даты смерти.','Начало XI в. — 1081/1092 гг.|нач. XI в. — 1081/1092|начало 11 века — 1081/1092','Начало XI в. — 1081/1095 гг.','Начало XI в. — 1071/1082 гг.','Конец X в. — 1081/1092 гг.'],
+[6,'','','Назовите три направления полемики Никиты Стифата.','Антилатинская|Антилатинское|Против латинян / Антиармянская|Антиармянское|Против армян / Антииудейская|Антииудейское|Против иудеев','Антилатинская, антиармянская, антииконоборческая','Антилатинская, антииудейская, антиисламская','Антиармянская, антииудейская, антимонофелитская'],
+[6,'','','Назовите три сочинения богословской трилогии Никиты Стифата.','О душе / О Рае / О небесной и церковной иерархии','О душе, О Рае, О божественных именах','О душе, О воскресении, О небесной и церковной иерархии','О душе, О Рае, О мистическом богословии']
+];
+const bank=rows.map(([seminar,group,short,question,key,...wrong],id)=>{
+ const parts=key.split(' / ').map(part=>part.split('|'));
+ return {id,seminar,group,short,question,parts,answer:parts.map(part=>part[0]).join(', '),wrong};
+});
+const titles={'эпохи':'Византийские периоды и их датировка','иконоборчество':'Периоды иконоборчества и их датировка','жизнь':'Авторы и годы их жизни','труды':'Авторы и их труды','патриаршества':'Патриаршества и их датировка','соборы':'Софийские соборы: годы, патриархи и нумерация'};
+const byId=id=>document.getElementById(id);
+const list=byId('questions'), checked=new Map();
+let variant=0, order=[], dirty=false;
+function shuffle(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
+function add(parent,tag,text='',className=''){const el=document.createElement(tag);el.textContent=text;el.className=className;parent.append(el);return el}
+function norm(text){return text.normalize('NFKC').toLowerCase().replace(/ё/g,'е').replace(/(^|[^\p{L}\p{N}])(?:ок|около|гг|г|год|годы|вв|в|век|века|веков|свт|прп|святитель|преподобный|патр|патриарх)(?=$|[^\p{L}\p{N}])/gu,'$1 ').replace(/[^\p{L}\p{N}]+/gu,' ').trim()}
+function distance(a,b){
+ const d=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+ for(let i=0;i<=a.length;i++)d[i][0]=i;
+ for(let j=0;j<=b.length;j++)d[0][j]=j;
+ for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++){
+  d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+Number(a[i-1]!==b[j-1]));
+  if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);
+ }
+ return d[a.length][b.length];
+}
+function near(given,key){
+ if(given===key)return true;
+ const a=given.split(' '), b=key.split(' ');
+ if(a.length!==b.length)return false;
+ let errors=0;
+ for(let i=0;i<b.length;i++){
+  if(a[i]===b[i])continue;
+  if(!/^[а-я]+$/.test(a[i])||!/^[а-я]+$/.test(b[i]))return false;
+  errors+=distance(a[i],b[i]);if(errors>2)return false;
+ }
+ return true;
+}
+function writtenCorrect(item,raw){
+ const given=raw.split(/[,;\n]+/).map(norm).filter(Boolean);
+ if(given.length!==item.parts.length)return false;
+ const keys=item.parts.map(part=>part.map(norm));
+ function pair(index,used){return index===given.length||keys.some((aliases,i)=>!(used&(1<<i))&&aliases.some(alias=>near(given[index],alias))&&pair(index+1,used|(1<<i)))}
+ return pair(0,0);
+}
+function update(){
+ const right=[...checked.values()].filter(Boolean).length;
+ byId('progress').textContent='Вариант '+(variant+1)+' · Проверено '+checked.size+' из '+bank.length;
+ const score=byId('score');score.replaceChildren();
+ add(score,'span','Верно: '+right,'count good');add(score,'span','Неверно: '+(checked.size-right),'count bad');add(score,'span','Осталось: '+(bank.length-checked.size),'muted');
+ const review=byId('review');review.replaceChildren();
+ if(checked.size!==bank.length)return;
+ order.forEach((item,i)=>{
+  const passed=checked.get(item.id), row=add(review,'li','',passed?'good':'bad');
+  add(row,'a',(i+1)+'. '+(passed?'Верно':'Неверно')+' · '+item.question).href='#q'+item.id;
+ });
+}
+function card(parent,item,mode,shared=[]){
+ const number=order.push(item), article=add(parent,'article');article.id='q'+item.id;
+ const written=mode==='written', matching=mode==='matching';
+ add(article,'div','Вопрос '+number+(matching?'':' · Семинар '+item.seminar+' · '+(written?'Письменный ответ':'Выбор ответа')),'meta');
+ const heading=add(article,'h3',matching?item.short:item.question);heading.id='heading'+item.id;
+ const form=add(article,'form'), fields=add(form,'fieldset');fields.setAttribute('aria-labelledby',heading.id);
+ let read;
+ if(written){
+  const label=add(fields,'label',item.parts.length>1?'Перечислите через запятую':'Впишите ответ');
+  const input=add(label,'textarea');input.required=true;input.maxLength=450;input.rows=2;read=()=>input.value.trim();
+ }else if(matching){
+  const input=add(fields,'select');input.setAttribute('aria-labelledby',heading.id);input.required=true;
+  add(input,'option','Выберите соответствие').value='';shared.forEach(answer=>{add(input,'option',answer).value=answer});read=()=>input.value;
+ }else{
+  for(const answer of shuffle([item.answer,...item.wrong])){
+   const label=add(fields,'label','','choice'),input=add(label,'input');input.type='radio';input.name='answer';input.value=answer;input.required=true;add(label,'span',answer);
+  }
+  read=()=>form.elements.answer.value;
+ }
+ const submit=add(form,'button','Проверить');submit.type='submit';
+ const notice=add(article,'div');notice.setAttribute('aria-live','polite');
+ form.addEventListener('submit',event=>{
+  event.preventDefault();if(checked.has(item.id))return;
+  const answer=read();
+  if(!answer){const input=fields.querySelector('textarea');if(input){input.value='';input.reportValidity()}return}
+  const passed=written?writtenCorrect(item,answer):answer===item.answer;
+  checked.set(item.id,passed);fields.disabled=true;submit.hidden=true;
+  notice.className='feedback '+(passed?'good':'bad');add(notice,'strong',passed?'Верно':'Неверно');add(notice,'p',(written?'Пример правильного ответа':'Правильный ответ')+' — '+item.answer);update();
+ });
+}
+function render(){
+ list.replaceChildren();order=[];const cards=[];
+ Object.keys(titles).forEach((group,i)=>{
+  const items=bank.filter(item=>item.group===group), phase=(variant+i)%3;
+  if(phase===0)cards.push({items:shuffle(items),mode:'matching',group});
+  else items.forEach(item=>cards.push({items:[item],mode:phase===1?'written':'choice'}));
+ });
+ bank.filter(item=>!item.group).forEach(item=>cards.push({items:[item],mode:(item.id+variant)%2?'written':'choice'}));
+ for(const {items,mode,group} of shuffle(cards)){
+  if(mode!=='matching'){card(list,items[0],mode);continue}
+  const section=add(list,'section','','matching');add(section,'div','Соответствия','meta');add(section,'h2',titles[group]);add(section,'p','Подберите вариант для каждой строки. В списке есть лишние ответы.','muted');
+  const keys=items.map(item=>item.answer), extras=shuffle([...new Set(items.flatMap(item=>item.wrong))]).filter(answer=>!keys.includes(answer)).slice(0,2);
+  const shared=shuffle([...keys,...extras]);items.forEach(item=>card(section,item,mode,shared));
+ }
+ update();
+}
+function change(){
+ if(dirty&&checked.size<bank.length&&!window.confirm('Начать другой вариант? Ответы текущего варианта будут сброшены.'))return;
+ variant++;checked.clear();dirty=false;render();byId('title').focus();window.scrollTo(0,0);
+}
+list.addEventListener('input',()=>{dirty=true});byId('change').addEventListener('click',change);byId('again').addEventListener('click',change);render();
+</script></html>
