@@ -2,8 +2,9 @@
 <html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Карта фактологии · 1 семестр</title>
 <style>
 :root{font:16px/1.55 system-ui,sans-serif;color:#2c2321;background:#f6f3ef;--red:#982525;--line:#e1d9d0}*{box-sizing:border-box}body{margin:0;border-top:5px solid var(--red)}main{width:min(860px,calc(100% - 32px));margin:auto;padding:40px 0}h1,h2,h3{font-family:Georgia,serif;line-height:1.18}h1{font-size:clamp(2.4rem,7vw,4rem);color:var(--red);font-weight:500;margin:0}h2,h3{margin:0 0 12px}h3{font-size:1.25rem}p{margin:6px 0}.muted{color:#675b55}.toolbar,.score{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.toolbar{justify-content:space-between;border-block:1px solid var(--line);margin:24px 0 16px;padding:12px 0}button,.button{display:inline-block;border:0;border-radius:999px;background:var(--red);color:white;padding:9px 17px;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}button:hover,.button:hover{background:#761d1d}:focus-visible{outline:3px solid #386499;outline-offset:3px}article,.matching,#results{background:white;border:1px solid var(--line);border-radius:12px;padding:clamp(15px,4vw,24px);margin:0 0 12px;scroll-margin-top:12px}.matching article{border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 0 0;margin:14px 0 0}.meta{color:var(--red);font-size:.82rem;font-weight:650;margin-bottom:6px}fieldset{border:0;margin:0 0 12px;padding:0;min-width:0}.choice{display:flex;align-items:baseline;gap:8px;padding:9px 11px;margin:6px 0;border:1px solid var(--line);border-radius:8px;cursor:pointer}.choice:has(input:checked){border-color:var(--red);background:#fcf0ed}input[type=radio]{accent-color:var(--red);flex:none}textarea,select{font:inherit;color:inherit;width:100%;display:block;border:1px solid #ab9f96;border-radius:8px;background:white;padding:9px 10px;margin-top:6px}textarea{resize:vertical;min-height:68px}.feedback,.count{border-radius:8px;padding:8px 12px}.feedback{margin-top:10px}.good{color:#1c6043;background:#eaf5ee}.bad{color:#932a2a;background:#faecea}#results{margin-top:26px}#review{padding:0;list-style:none}#review li{margin:6px 0;padding:6px 10px;border-radius:6px}#review a{color:inherit;text-underline-offset:3px}
+.seminar-picker{display:block;width:min(100%,340px);margin-top:18px;font-weight:600}.seminar-picker select{margin-top:5px;font-weight:400}
 </style>
-<main><header><h1 id="title" tabindex="-1">Карта фактологии</h1><p class="muted">1 семестр · 6 семинаров · 29 вопросов</p></header><div class="toolbar"><span id="progress" aria-live="polite"></span><div><a class="button" href="#results">К результатам</a> <button id="change">Другой вариант</button></div></div><div id="questions"></div><section id="results"><h2>Результаты</h2><div id="score" class="score" aria-live="polite"></div><ul id="review"></ul><button id="again">Другой вариант</button></section></main>
+<main><header><h1 id="title" tabindex="-1">Карта фактологии</h1><p class="muted">1 семестр</p><label class="seminar-picker" for="seminar">Семинар<select id="seminar"><option value="1">1-й семинар</option><option value="2">2-й семинар · 1–2</option><option value="3">3-й семинар · 1–3</option><option value="4">4-й семинар · 1–4</option><option value="5">5-й семинар · 1–5</option><option value="6" selected>6-й семинар · 1–6</option></select></label></header><div class="toolbar"><span id="progress" aria-live="polite"></span><div><a class="button" href="#results">К результатам</a> <button id="change">Другой вариант</button></div></div><div id="questions"></div><section id="results"><h2>Результаты</h2><div id="score" class="score" aria-live="polite"></div><ul id="review"></ul><button id="again">Другой вариант</button></section></main>
 <script>
 const rows=[
 [1,'эпохи','Средневизантийский период','Какими веками датируется средневизантийский период по карте?','IX–XII вв.|9–12','VIII–XI вв.','IX–XIII вв.','X–XII вв.'],
@@ -42,7 +43,8 @@ const bank=rows.map(([seminar,group,short,question,key,...wrong],id)=>{
 });
 const titles={'эпохи':'Византийские периоды и их датировка','иконоборчество':'Периоды иконоборчества и их датировка','жизнь':'Авторы и годы их жизни','труды':'Авторы и их труды','патриаршества':'Патриаршества и их датировка','соборы':'Софийские соборы: годы, патриархи и нумерация'};
 const byId=id=>document.getElementById(id);
-const list=byId('questions'), checked=new Map();
+const list=byId('questions'), seminar=byId('seminar'), checked=new Map();
+let selectedSeminar=Number(seminar.value);
 let variant=0, order=[], dirty=false;
 function shuffle(items){const copy=[...items];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
 function add(parent,tag,text='',className=''){const el=document.createElement(tag);el.textContent=text;el.className=className;parent.append(el);return el}
@@ -78,11 +80,11 @@ function writtenCorrect(item,raw){
 }
 function update(){
  const right=[...checked.values()].filter(Boolean).length;
- byId('progress').textContent='Вариант '+(variant+1)+' · Проверено '+checked.size+' из '+bank.length;
+ byId('progress').textContent='Вариант '+(variant+1)+' · Проверено '+checked.size+' из '+order.length;
  const score=byId('score');score.replaceChildren();
- add(score,'span','Верно: '+right,'count good');add(score,'span','Неверно: '+(checked.size-right),'count bad');add(score,'span','Осталось: '+(bank.length-checked.size),'muted');
+ add(score,'span','Верно: '+right,'count good');add(score,'span','Неверно: '+(checked.size-right),'count bad');add(score,'span','Осталось: '+(order.length-checked.size),'muted');
  const review=byId('review');review.replaceChildren();
- if(checked.size!==bank.length)return;
+ if(checked.size!==order.length)return;
  order.forEach((item,i)=>{
   const passed=checked.get(item.id), row=add(review,'li','',passed?'good':'bad');
   add(row,'a',(i+1)+'. '+(passed?'Верно':'Неверно')+' · '+item.question).href='#q'+item.id;
@@ -120,12 +122,14 @@ function card(parent,item,mode,shared=[]){
 }
 function render(){
  list.replaceChildren();order=[];const cards=[];
+ const available=bank.filter(item=>item.seminar<=selectedSeminar);
  Object.keys(titles).forEach((group,i)=>{
-  const items=bank.filter(item=>item.group===group), phase=(variant+i)%3;
-  if(phase===0)cards.push({items:shuffle(items),mode:'matching',group});
+  const items=available.filter(item=>item.group===group), phase=(variant+i)%3;
+  if(!items.length)return;
+  if(phase===0&&items.length>1)cards.push({items:shuffle(items),mode:'matching',group});
   else items.forEach(item=>cards.push({items:[item],mode:phase===1?'written':'choice'}));
  });
- bank.filter(item=>!item.group).forEach(item=>cards.push({items:[item],mode:(item.id+variant)%2?'written':'choice'}));
+ available.filter(item=>!item.group).forEach(item=>cards.push({items:[item],mode:(item.id+variant)%2?'written':'choice'}));
  for(const {items,mode,group} of shuffle(cards)){
   if(mode!=='matching'){card(list,items[0],mode);continue}
   const section=add(list,'section','','matching');add(section,'div','Соответствия','meta');add(section,'h2',titles[group]);add(section,'p','Подберите вариант для каждой строки. В списке есть лишние ответы.','muted');
@@ -135,8 +139,16 @@ function render(){
  update();
 }
 function change(){
- if(dirty&&checked.size<bank.length&&!window.confirm('Начать другой вариант? Ответы текущего варианта будут сброшены.'))return;
+ if(dirty&&checked.size<order.length&&!window.confirm('Начать другой вариант? Ответы текущего варианта будут сброшены.'))return;
  variant++;checked.clear();dirty=false;render();byId('title').focus();window.scrollTo(0,0);
 }
+seminar.addEventListener('change',()=>{
+ if(dirty&&checked.size<order.length&&!window.confirm('Сменить семинар? Ответы текущего варианта будут сброшены.')){
+  seminar.value=String(selectedSeminar);
+  return;
+ }
+ selectedSeminar=Number(seminar.value);
+ variant=0;checked.clear();dirty=false;render();
+});
 list.addEventListener('input',()=>{dirty=true});byId('change').addEventListener('click',change);byId('again').addEventListener('click',change);render();
 </script></html>
